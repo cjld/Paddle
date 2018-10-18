@@ -348,17 +348,28 @@ framework::OpKernelType ConvOpGrad::GetExpectedKernelType(
       layout_, library_);
 }
 
+class NoOutputGradOpDescMaker
+    : public paddle::framework::CheckInputGradOpDescMaker<true> {
+ public:
+  using CheckInputGradOpDescMaker::CheckInputGradOpDescMaker;
+
+  bool CheckInput(const std::string& input_name) const {
+    if (input_name == "Output") return false;
+    return true;
+  }
+};
+
 }  // namespace operators
 }  // namespace paddle
 
 namespace ops = paddle::operators;
 REGISTER_OPERATOR(conv2d, ops::ConvOp, ops::Conv2DOpMaker,
-                  paddle::framework::DefaultGradOpDescMaker<true>);
+                  ops::NoOutputGradOpDescMaker);
 REGISTER_OPERATOR(conv2d_grad, ops::ConvOpGrad);
 
 // depthwise convolution op
 REGISTER_OPERATOR(depthwise_conv2d, ops::ConvOp, ops::Conv2DOpMaker,
-                  paddle::framework::DefaultGradOpDescMaker<true>);
+                  ops::NoOutputGradOpDescMaker);
 REGISTER_OPERATOR(depthwise_conv2d_grad, ops::ConvOpGrad);
 REGISTER_OPERATOR(conv3d, ops::ConvOp, ops::Conv3DOpMaker,
                   paddle::framework::DefaultGradOpDescMaker<true>);
